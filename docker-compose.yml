@@ -1,0 +1,42 @@
+version: '3'
+services:
+    php:
+        build: ./php-fpm
+        restart: unless-stopped
+        working_dir: /var/www/
+        volumes:
+            # php site mapping goes here
+            - ../:/var/www/
+        networks:
+            - default
+
+    nginx:
+        build: ./nginx
+        restart: unless-stopped
+        ports:
+            - "80:80"
+        volumes:
+            - ./nginx/sites:/etc/nginx/conf.d/
+            # site mapping goes here
+            - ../:/var/www/
+        networks:
+            - default
+
+    mysql:
+        build: ./mysql
+        restart: unless-stopped
+        ports:
+            - "3306:3306"
+        environment:
+            MYSQL_ROOT_PASSWORD: secret
+        volumes:
+              - mysqldb:/var/lib/mysql
+        networks:
+            - default
+
+networks:
+  default:
+    driver: "bridge"
+
+volumes:
+    mysqldb:
