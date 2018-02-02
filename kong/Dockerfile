@@ -1,0 +1,3 @@
+FROM kong:0.12.1-alpine
+
+EXPOSE 8000 8001

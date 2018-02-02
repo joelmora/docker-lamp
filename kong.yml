@@ -1,0 +1,52 @@
+version: '3'
+services:
+    postgres:
+        build: ./postgres
+        restart: unless-stopped
+        environment:
+            POSTGRES_DB: kong-db
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: secret
+        ports:
+            - "5432:5432"
+        volumes:
+            - kongpg:/var/lib/postgresql/data
+        networks:
+            - default
+
+    kong:
+          build: ./kong
+          restart: unless-stopped
+          environment:
+              KONG_DATABASE: postgres #db engine
+              #postgres config
+              KONG_PG_HOST: postgres
+              KONG_PG_DATABASE: kong-db
+              KONG_PG_USER: postgres
+              KONG_PG_PASSWORD: secret
+              KONG_ADMIN_LISTEN: 0.0.0.0:8001
+          ports:
+              - "8000:8000" #public
+              - "8001:8001" #admin
+          networks:
+              - default
+          #uncomment only to run migrations
+          #command: "kong migrations up"
+
+    konga:
+          build: ./kong/konga
+          restart: unless-stopped
+          environment:
+              KONGA_BACKEND_URL: kong:8001
+          ports:
+              - "1338:1337"
+          networks:
+              - default
+    #default credentials, admin:adminadminadmin
+
+networks:
+  default:
+    driver: "bridge"
+
+volumes:
+    kongpg:
